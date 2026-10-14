@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-slate-50">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ app_name }} - SLA Breach Dashboard & Analyzer</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#eef2ff',
+                            100: '#e0e7ff',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                            900: '#312e81',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="h-full flex flex-col text-slate-800 antialiased selection:bg-indigo-500 selection:text-white">
+
+    <!-- Top Navigation Bar -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <!-- Brand & Logo -->
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center text-white shadow-md shadow-indigo-100">
+                        <!-- Shield & Clock Icon -->
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h1 class="text-lg font-bold text-slate-900 tracking-tight leading-none">
+                            SLA Breach Dashboard &amp; Analyzer
+                        </h1>
+                        <p class="text-xs text-slate-500 mt-1 font-medium">Confluence &amp; Word Export Ticket Ingestion Engine</p>
+                    </div>
+                </div>
+
+                <!-- Right Metadata Badges -->
+                <div class="flex items-center space-x-3">
+                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200">
+                        v{{ version }}
+                    </span>
+                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500 mr-1.5 pulse-indicator"></span>
+                        System Ready
+                    </span>
+                </div>
+            </div>
+
+            <!-- Tab Navigation Bar -->
+            <div class="flex space-x-1 border-t border-slate-100 pt-2 -mb-px">
+                <button id="tab-btn-upload" type="button" class="tab-button inline-flex items-center px-4 py-2.5 border-b-2 border-indigo-600 font-semibold text-sm text-indigo-600 transition-colors">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+                    </svg>
+                    Upload &amp; Overview
+                </button>
+                <button id="tab-btn-records" type="button" class="tab-button inline-flex items-center px-4 py-2.5 border-b-2 border-transparent font-medium text-sm text-slate-600 hover:text-slate-900 hover:border-slate-300 transition-colors">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M3 14h18m-9-4v8m-7 4h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                    </svg>
+                    SLA Records Explorer
+                    <span id="records-badge" class="ml-2 px-2 py-0.5 text-xs font-semibold rounded-full bg-slate-100 text-slate-600">0</span>
+                </button>
+                <button id="tab-btn-rules" type="button" class="tab-button inline-flex items-center px-4 py-2.5 border-b-2 border-transparent font-medium text-sm text-slate-600 hover:text-slate-900 hover:border-slate-300 transition-colors">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    </svg>
+                    SLA Rules &amp; Settings
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+        <!-- ========================================== -->
+        <!-- TAB 1: UPLOAD & OVERVIEW                   -->
+        <!-- ========================================== -->
+        <section id="tab-content-upload" class="space-y-6">
+
+            <!-- Drag and Drop Zone Card -->
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 sm:p-8">
+                <div class="max-w-2xl mx-auto text-center">
+                    <h2 class="text-xl font-bold text-slate-900 tracking-tight">Upload Ticket Export File</h2>
+                    <p class="text-sm text-slate-500 mt-1">
+                        Ingest Confluence HTML tables or Word DOCX documents with automated schema detection and SLA compliance calculation.
+                    </p>
+
+                    <!-- Drop Zone Area -->
+                    <div id="drop-zone" class="mt-6 border-2 border-dashed border-indigo-200 hover:border-indigo-400 bg-indigo-50/40 hover:bg-indigo-50/70 rounded-2xl p-8 cursor-pointer transition-all duration-200 group">
+                        <input type="file" id="file-input" accept=".html,.htm,.docx" class="hidden">
+                        
+                        <div class="flex flex-col items-center pointer-events-none">
+                            <div class="w-16 h-16 rounded-full bg-white shadow-sm border border-indigo-100 flex items-center justify-center text-indigo-600 group-hover:scale-110 transition-transform">
+                                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                                </svg>
+                            </div>
+                            <p class="mt-4 text-base font-semibold text-slate-800">
+                                Drag &amp; drop Confluence HTML or Word DOCX export here, or <span class="text-indigo-600 underline decoration-indigo-300 underline-offset-2">click to browse</span>
+                            </p>
+                            <p class="text-xs text-slate-400 mt-1">Single-file upload up to 25 MB</p>
+
+                            <!-- Supported Formats Badges -->
+                            <div class="flex items-center space-x-2 mt-4">
+                                <span class="px-2.5 py-1 text-xs font-medium rounded-md bg-white border border-slate-200 text-slate-600 shadow-xs">HTML (.html, .htm)</span>
+                                <span class="px-2.5 py-1 text-xs font-medium rounded-md bg-white border border-slate-200 text-slate-600 shadow-xs">Word (.docx)</span>
+                                <span class="px-2.5 py-1 text-xs font-medium rounded-md bg-white border border-slate-200 text-slate-600 shadow-xs">Max 25 MB</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Upload Spinner Indicator -->
+                    <div id="upload-spinner" class="hidden mt-6 flex flex-col items-center justify-center p-4">
+                        <svg class="animate-spin h-8 w-8 text-indigo-600 mb-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <p id="upload-status-text" class="text-sm font-medium text-slate-700">Parsing and evaluating ticket SLA metrics...</p>
+                    </div>
+
+                    <!-- Upload Error Banner -->
+                    <div id="upload-error-banner" class="hidden mt-4 p-4 rounded-xl bg-rose-50 border border-rose-200 text-left">
+                        <div class="flex items-start">
+                            <svg class="w-5 h-5 text-rose-500 mt-0.5 mr-2.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            <div>
+                                <h4 class="text-sm font-semibold text-rose-800">Upload / Parsing Error</h4>
+                                <p id="upload-error-text" class="text-xs text-rose-700 mt-1"></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- File Metadata Info Banner -->
+            <div id="file-info-banner" class="hidden bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 rounded-lg bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <div class="flex items-center space-x-2">
+                                <h3 id="file-info-name" class="text-sm font-bold text-slate-900">tickets.html</h3>
+                                <span id="file-info-size" class="text-xs text-slate-500 font-normal">(0 KB)</span>
+                            </div>
+                            <p class="text-xs text-slate-500 mt-0.5">
+                                Processed at <span id="file-info-extracted" class="font-medium text-slate-700">--</span> &bull; 
+                                <span id="file-info-rows" class="font-medium text-slate-700">0</span> records parsed
+                            </p>
+                        </div>
+                    </div>
+                    <div id="file-info-warnings" class="text-xs text-amber-600 font-medium"></div>
+                </div>
+            </div>
+
+            <!-- 4 Executive KPI Highlight Cards Grid -->
+            <div id="kpi-section" class="hidden grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+                
+                <!-- KPI 1: Total Records -->
+                <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-semibold uppercase tracking-wider text-slate-500">Total Records</span>
+                        <div class="w-9 h-9 rounded-xl bg-slate-100 text-slate-600 flex items-center justify-center">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <p id="kpi-total-records" class="text-3xl font-extrabold text-slate-900 tracking-tight">0</p>
+                        <p class="text-xs text-slate-500 mt-1 font-medium">Parsed Tickets</p>
+                    </div>
+                </div>
+
+                <!-- KPI 2: Breached Records & Rate -->
+                <div class="bg-white border border-rose-200/80 rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-semibold uppercase tracking-wider text-rose-600">Breached Records</span>
+                        <div class="w-9 h-9 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="mt-4 flex items-baseline justify-between">
+                        <div>
+                            <p id="kpi-breached-count" class="text-3xl font-extrabold text-rose-600 tracking-tight">0</p>
+                            <p class="text-xs text-slate-500 mt-1 font-medium">Overdue Resolution</p>
+                        </div>
+                        <span id="kpi-breach-rate" class="px-2.5 py-1 text-xs font-bold rounded-full bg-rose-100 text-rose-800 border border-rose-200">
+                            0%
+                        </span>
+                    </div>
+                </div>
+
+                <!-- KPI 3: Avg Overdue Days -->
+                <div class="bg-white border border-amber-200/80 rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-semibold uppercase tracking-wider text-amber-600">Avg Overdue Days</span>
+                        <div class="w-9 h-9 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <p id="kpi-avg-overdue" class="text-3xl font-extrabold text-slate-900 tracking-tight">0.0 days</p>
+                        <p class="text-xs text-slate-500 mt-1 font-medium">For Breached Tickets</p>
+                    </div>
+                </div>
+
+                <!-- KPI 4: Critical Tickets -->
+                <div class="bg-white border border-orange-200/80 rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-semibold uppercase tracking-wider text-orange-600">Critical Tickets</span>
+                        <div class="w-9 h-9 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <p id="kpi-critical-count" class="text-3xl font-extrabold text-orange-600 tracking-tight">0</p>
+                        <p class="text-xs text-slate-500 mt-1 font-medium">Overdue &gt;= 3 Days</p>
+                    </div>
+                </div>
+
+            </div>
+
+        </section>
+
+        <!-- ========================================== -->
+        <!-- TAB 2: SLA RECORDS EXPLORER                -->
+        <!-- ========================================== -->
+        <section id="tab-content-records" class="hidden space-y-5">
+
+            <!-- Filter Toolbar Card -->
+            <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    
+                    <!-- Search Input -->
+                    <div class="relative flex-1 max-w-md">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <svg class="h-4 w-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                            </svg>
+                        </div>
+                        <input type="text" id="table-search" placeholder="Search ticket key, summary, team, or status..." class="block w-full pl-9 pr-4 py-2 border border-slate-200 rounded-xl text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors">
+                    </div>
+
+                    <!-- Dropdowns & Filters -->
+                    <div class="flex flex-wrap items-center gap-3">
+                        <!-- Priority Dropdown -->
+                        <div>
+                            <select id="filter-priority" class="block w-full py-2 pl-3 pr-8 border border-slate-200 rounded-xl text-sm font-medium text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                <option value="">All Priorities</option>
+                                <option value="P1">P1 - Highest</option>
+                                <option value="P2">P2 - High</option>
+                                <option value="P3">P3 - Medium</option>
+                                <option value="P4">P4 - Low</option>
+                            </select>
+                        </div>
+
+                        <!-- Severity Dropdown -->
+                        <div>
+                            <select id="filter-severity" class="block w-full py-2 pl-3 pr-8 border border-slate-200 rounded-xl text-sm font-medium text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                <option value="">All Severities</option>
+                                <option value="OK">OK (Compliant)</option>
+                                <option value="WARNING">WARNING (Approaching)</option>
+                                <option value="CRITICAL">CRITICAL (High Risk)</option>
+                                <option value="BREACHED">BREACHED (Overdue)</option>
+                            </select>
+                        </div>
+
+                        <!-- Breached Only Toggle -->
+                        <label class="inline-flex items-center cursor-pointer select-none px-3 py-2 border border-slate-200 rounded-xl bg-slate-50 hover:bg-slate-100 transition-colors">
+                            <input type="checkbox" id="filter-breached-only" class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 h-4 w-4">
+                            <span class="ml-2 text-xs font-semibold text-slate-700">Breached Only</span>
+                        </label>
+
+                        <!-- Reset Filters Button -->
+                        <button id="btn-reset-filters" type="button" class="px-3 py-2 text-xs font-semibold text-slate-600 hover:text-slate-900 border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors">
+                            Reset
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Records Counter Indicator -->
+                <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+                    <span id="table-counter">Showing 0 of 0 records</span>
+                    <span class="text-slate-400">Click column header to sort</span>
+                </div>
+            </div>
+
+            <!-- Table Container -->
+            <div id="records-table-container" class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-slate-200 text-left text-sm">
+                        <thead class="bg-slate-50/75 text-xs font-semibold text-slate-600 select-none">
+                            <tr>
+                                <th scope="col" data-sort="key" class="sort-header px-4 py-3.5 cursor-pointer hover:bg-slate-100 transition-colors">
+                                    <div class="flex items-center space-x-1">
+                                        <span>Key</span>
+                                        <span class="sort-indicator text-slate-400 text-[10px]">▼</span>
+                                    </div>
+                                </th>
+                                <th scope="col" class="px-4 py-3.5">Summary</th>
+                                <th scope="col" class="px-4 py-3.5">Team</th>
+                                <th scope="col" data-sort="priority" class="sort-header px-4 py-3.5 cursor-pointer hover:bg-slate-100 transition-colors">
+                                    <div class="flex items-center space-x-1">
+                                        <span>Priority</span>
+                                        <span class="sort-indicator text-slate-400 text-[10px]">▼</span>
+                                    </div>
+                                </th>
+                                <th scope="col" class="px-4 py-3.5">Status</th>
+                                <th scope="col" data-sort="sla_target_days" class="sort-header px-4 py-3.5 cursor-pointer hover:bg-slate-100 transition-colors text-right">
+                                    <div class="flex items-center justify-end space-x-1">
+                                        <span>Target</span>
+                                        <span class="sort-indicator text-slate-400 text-[10px]">▼</span>
+                                    </div>
+                                </th>
+                                <th scope="col" data-sort="elapsed_days" class="sort-header px-4 py-3.5 cursor-pointer hover:bg-slate-100 transition-colors text-right">
+                                    <div class="flex items-center justify-end space-x-1">
+                                        <span>Elapsed</span>
+                                        <span class="sort-indicator text-slate-400 text-[10px]">▼</span>
+                                    </div>
+                                </th>
+                                <th scope="col" data-sort="overdue_days" class="sort-header px-4 py-3.5 cursor-pointer hover:bg-slate-100 transition-colors text-right">
+                                    <div class="flex items-center justify-end space-x-1">
+                                        <span>Overdue</span>
+                                        <span class="sort-indicator text-slate-400 text-[10px]">▼</span>
+                                    </div>
+                                </th>
+                                <th scope="col" data-sort="severity" class="sort-header px-4 py-3.5 cursor-pointer hover:bg-slate-100 transition-colors text-center">
+                                    <div class="flex items-center justify-center space-x-1">
+                                        <span>Severity</span>
+                                        <span class="sort-indicator text-slate-400 text-[10px]">▼</span>
+                                    </div>
+                                </th>
+                                <th scope="col" class="px-4 py-3.5 text-center">Details</th>
+                            </tr>
+                        </thead>
+                        <tbody id="records-table-body" class="divide-y divide-slate-100 bg-white">
+                            <!-- Empty State Placeholder -->
+                            <tr id="table-empty-state">
+                                <td colspan="10" class="px-6 py-12 text-center text-slate-400 text-sm">
+                                    <div class="flex flex-col items-center justify-center">
+                                        <svg class="w-10 h-10 text-slate-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                        </svg>
+                                        <p class="font-medium text-slate-600">No records loaded yet.</p>
+                                        <p class="text-xs text-slate-400 mt-1">Drag-and-drop an export file in the Upload tab to populate this explorer.</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Raw Fields Modal -->
+            <div id="raw-fields-modal" class="hidden fixed inset-0 z-50 overflow-y-auto">
+                <!-- Backdrop overlay -->
+                <div id="raw-fields-backdrop" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs transition-opacity"></div>
+                
+                <div class="flex min-h-full items-center justify-center p-4">
+                    <div class="relative bg-white rounded-2xl max-w-2xl w-full p-6 shadow-2xl modal-animate-in border border-slate-200">
+                        <!-- Header -->
+                        <div class="flex items-center justify-between border-b border-slate-100 pb-4">
+                            <div>
+                                <h3 class="text-base font-bold text-slate-900 flex items-center">
+                                    <span id="modal-ticket-key" class="text-indigo-600 font-mono mr-2">TICKET-KEY</span>
+                                    <span>Raw Fields &amp; Unmapped Attributes</span>
+                                </h3>
+                                <p id="modal-ticket-summary" class="text-xs text-slate-500 mt-1 truncate max-w-md"></p>
+                            </div>
+                            <button id="modal-close-btn" type="button" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg hover:bg-slate-100 transition-colors">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                </svg>
+                            </button>
+                        </div>
+                        <!-- JSON Viewer Body -->
+                        <div class="mt-4">
+                            <p class="text-xs text-slate-500 mb-2">Original tabular row data and custom unmapped Jira/Confluence properties:</p>
+                            <pre id="raw-fields-json" class="p-4 bg-slate-900 text-slate-100 rounded-xl text-xs font-mono overflow-x-auto max-h-96 select-text"></pre>
+                        </div>
+                        <!-- Footer -->
+                        <div class="mt-6 flex justify-end">
+                            <button id="modal-close-btn-footer" type="button" class="px-4 py-2 text-xs font-semibold text-white bg-slate-800 hover:bg-slate-700 rounded-xl transition-colors">
+                                Close Inspector
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- ========================================== -->
+        <!-- TAB 3: SLA RULES & SETTINGS                -->
+        <!-- ========================================== -->
+        <section id="tab-content-rules" class="hidden space-y-6">
+
+            <div class="flex items-center justify-between">
+                <div>
+                    <h2 class="text-xl font-bold text-slate-900 tracking-tight">Active SLA Rules &amp; Ingestion Configuration</h2>
+                    <p class="text-sm text-slate-500 mt-1">Live parameters loaded from configuration models powering breach detection.</p>
+                </div>
+                <button id="btn-refresh-rules" type="button" class="inline-flex items-center px-3.5 py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 shadow-xs transition-colors">
+                    <svg class="w-3.5 h-3.5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                    </svg>
+                    Refresh Rules
+                </button>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+                <!-- Priority Target Durations Card -->
+                <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+                    <div class="flex items-center space-x-3 mb-4">
+                        <div class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-sm font-bold text-slate-900">Priority Target Durations</h3>
+                    </div>
+                    <div id="rules-priorities-list" class="space-y-2 text-sm">
+                        <div class="text-xs text-slate-400">Loading priority targets...</div>
+                    </div>
+                </div>
+
+                <!-- Severity & Breach Thresholds Card -->
+                <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+                    <div class="flex items-center space-x-3 mb-4">
+                        <div class="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-sm font-bold text-slate-900">Severity Thresholds</h3>
+                    </div>
+                    <div id="rules-severity-list" class="space-y-3 text-sm">
+                        <div class="text-xs text-slate-400">Loading severity criteria...</div>
+                    </div>
+                </div>
+
+                <!-- Ingestion Constraints & File Limits Card -->
+                <div id="rules-limits-card" class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+                    <div class="flex items-center space-x-3 mb-4">
+                        <div class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-sm font-bold text-slate-900">Ingestion Constraints</h3>
+                    </div>
+                    <div id="rules-limits-body" class="space-y-3 text-sm">
+                        <div class="text-xs text-slate-400">Loading upload limits...</div>
+                    </div>
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-200 py-4 text-center text-xs text-slate-400">
+        <p>&copy; 2026 SLA Breach Dashboard &amp; Analyzer &bull; High Reliability Offline-First Ingestion</p>
+    </footer>
+
+    <!-- Client-side Logic -->
+    <script src="/static/js/app.js"></script>
+</body>
+</html>

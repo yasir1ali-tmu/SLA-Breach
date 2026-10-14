@@ -8,6 +8,7 @@ from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from config.settings import AppSettings, get_settings
@@ -65,10 +66,28 @@ def create_app(settings: AppSettings | None = None) -> FastAPI:
             content={"detail": "Internal server error", "error": str(exc)},
         )
 
-    # Conditionally mount static files if directory exists
-    static_dir = Path("web/static")
+    # Template and static assets configuration
+    templates_dir = Path(__file__).parent / "templates"
+    templates = Jinja2Templates(directory=str(templates_dir))
+
+    # Mount static files directory
+    static_dir = Path(__file__).parent / "static"
     if static_dir.is_dir():
         app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
+
+    # Root route serving dashboard UI
+    @app.get("/", summary="Dashboard web user interface")
+    async def index(request: Request):
+        """Render the main multi-tab SLA breach dashboard interface."""
+        return templates.TemplateResponse(
+            request=request,
+            name="index.html",
+            context={
+                "request": request,
+                "app_name": app_settings.app_name,
+                "version": app_settings.app_version,
+            },
+        )
 
     # Include REST API endpoints under /api prefix
     app.include_router(api_router, prefix="/api")
