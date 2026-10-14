@@ -592,8 +592,9 @@ async function loadRules() {
 
         // Render Priority Targets
         const prioritiesContainer = document.getElementById('rules-priorities-list');
-        if (prioritiesContainer && data.sla_thresholds && data.sla_thresholds.priority_target_days) {
-            const targets = data.sla_thresholds.priority_target_days;
+        const priorityTargets = data.sla_thresholds && (data.sla_thresholds.priority_targets_days || data.sla_thresholds.priority_target_days);
+        if (prioritiesContainer && priorityTargets) {
+            const targets = priorityTargets;
             let rowsHtml = '<table class="min-w-full text-xs"><thead><tr class="text-slate-400 border-b border-slate-100"><th class="pb-2 text-left">Priority</th><th class="pb-2 text-right">Target Duration</th></tr></thead><tbody class="divide-y divide-slate-100">';
             
             for (const [p, days] of Object.entries(targets)) {
@@ -612,19 +613,22 @@ async function loadRules() {
         const severityContainer = document.getElementById('rules-severity-list');
         if (severityContainer && data.severity_rules) {
             const s = data.severity_rules;
+            const warningPct = s.warning_threshold_pct != null ? s.warning_threshold_pct : 80;
+            const breachedThreshold = s.breached_threshold_days != null ? s.breached_threshold_days : (s.breached_overdue_days_threshold != null ? s.breached_overdue_days_threshold : 0);
+            const criticalDays = s.critical_overdue_days != null ? s.critical_overdue_days : (s.critical_overdue_days_threshold != null ? s.critical_overdue_days_threshold : 3);
             severityContainer.innerHTML = `
                 <div class="space-y-2 text-xs">
                     <div class="flex justify-between py-1.5 border-b border-slate-100">
                         <span class="text-slate-600">Warning Threshold</span>
-                        <span class="font-mono font-bold text-amber-600">&ge; ${(s.warning_threshold_pct * 100).toFixed(0)}% of target</span>
+                        <span class="font-mono font-bold text-amber-600">&ge; ${warningPct}% of target</span>
                     </div>
                     <div class="flex justify-between py-1.5 border-b border-slate-100">
                         <span class="text-slate-600">Breached Criteria</span>
-                        <span class="font-mono font-bold text-rose-600">&gt; ${s.breached_overdue_days_threshold} days overdue</span>
+                        <span class="font-mono font-bold text-rose-600">&gt; ${breachedThreshold} days overdue</span>
                     </div>
                     <div class="flex justify-between py-1.5">
                         <span class="text-slate-600">Critical Criteria</span>
-                        <span class="font-mono font-bold text-orange-600">&ge; ${s.critical_overdue_days_threshold} days overdue</span>
+                        <span class="font-mono font-bold text-orange-600">&ge; ${criticalDays} days overdue</span>
                     </div>
                 </div>
             `;
