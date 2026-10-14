@@ -1,0 +1,122 @@
+# ==============================================================================
+# SLA Breach Analyzer & Dashboard - Default Rules Configuration
+# ==============================================================================
+
+application:
+  name: "SLA Breach Dashboard & Analyzer"
+  version: "1.0.0"
+  debug: false
+  max_upload_size_mb: 25
+  allowed_extensions:
+    - ".html"
+    - ".htm"
+    - ".docx"
+
+# SLA resolution target windows in days per priority level
+sla_thresholds:
+  default_target_days: 5.0
+  priority_targets_days:
+    P1: 1.0
+    Blocker: 1.0
+    P2: 2.0
+    Critical: 2.0
+    P3: 5.0
+    Major: 5.0
+    P4: 10.0
+    Minor: 10.0
+    P5: 15.0
+    Trivial: 15.0
+
+# Thresholds for severity status classification
+severity_rules:
+  # Warning triggered when elapsed time >= 80.0% of SLA target
+  warning_threshold_pct: 80.0
+  # Overdue days > 0.0 triggers BREACHED status
+  breached_threshold_days: 0.0
+  # Overdue days > 3.0 triggers CRITICAL severity
+  critical_overdue_days: 3.0
+
+# Mapping of canonical schema fields to synonymous table column headers
+column_mappings:
+  ticket_id:
+    - "Key"
+    - "Issue key"
+    - "Issue Key"
+    - "Ticket"
+    - "Ticket ID"
+    - "ID"
+    - "Incident ID"
+    - "Reference"
+    - "Task Key"
+    - "Item #"
+  summary:
+    - "Summary"
+    - "Title"
+    - "Issue summary"
+    - "Description"
+    - "Topic"
+    - "Subject"
+    - "Item Description"
+  status:
+    - "Status"
+    - "State"
+    - "Issue Status"
+    - "Current Status"
+    - "Progress"
+    - "Ticket Status"
+  priority:
+    - "Priority"
+    - "Severity"
+    - "Urgency"
+    - "Level"
+    - "Importance"
+  created_date:
+    - "Created"
+    - "Created Date"
+    - "Creation Date"
+    - "Reported"
+    - "Date Created"
+    - "Open Date"
+    - "Reported Date"
+    - "Start Date"
+  resolved_date:
+    - "Resolved"
+    - "Resolution Date"
+    - "Closed"
+    - "Closed Date"
+    - "Date Resolved"
+    - "Completion Date"
+    - "End Date"
+  due_date:
+    - "Due Date"
+    - "Due"
+    - "Target Date"
+    - "SLA Due Date"
+    - "Deadline"
+    - "Target Resolution Date"
+  team:
+    - "Assignee"
+    - "Team"
+    - "Assigned Team"
+    - "Owner"
+    - "Component"
+    - "Group"
+    - "Assigned Group"
+    - "Department"
+
+# Datetime parsing configurations and format templates
+date_parsing:
+  default_timezone: "UTC"
+  formats:
+    - "%Y-%m-%d %H:%M:%S"
+    - "%Y-%m-%d %H:%M"
+    - "%Y-%m-%d"
+    - "%d/%b/%y %I:%M %p"
+    - "%d/%m/%Y %H:%M:%S"
+    - "%d/%m/%Y %H:%M"
+    - "%d/%m/%Y"
+    - "%m/%d/%Y %I:%M:%S %p"
+    - "%m/%d/%Y %I:%M %p"
+    - "%m/%d/%Y"
+    - "%b %d, %Y %I:%M %p"
+    - "%d-%b-%Y"
