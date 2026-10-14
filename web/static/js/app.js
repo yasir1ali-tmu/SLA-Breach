@@ -10,7 +10,13 @@ const state = {
     currentFile: null,
     activeRules: null,
     sortField: 'overdue_days',
-    sortDirection: 'desc'
+    sortDirection: 'desc',
+    analytics: null,
+    charts: {
+        severity: null,
+        overdue: null,
+        teams: null
+    }
 };
 
 // ============================================================================
@@ -31,15 +37,17 @@ document.addEventListener('DOMContentLoaded', () => {
 function initTabNavigation() {
     const tabUploadBtn = document.getElementById('tab-btn-upload');
     const tabRecordsBtn = document.getElementById('tab-btn-records');
+    const tabAnalyticsBtn = document.getElementById('tab-btn-analytics');
     const tabRulesBtn = document.getElementById('tab-btn-rules');
 
     if (tabUploadBtn) tabUploadBtn.addEventListener('click', () => switchTab('upload'));
     if (tabRecordsBtn) tabRecordsBtn.addEventListener('click', () => switchTab('records'));
+    if (tabAnalyticsBtn) tabAnalyticsBtn.addEventListener('click', () => switchTab('analytics'));
     if (tabRulesBtn) tabRulesBtn.addEventListener('click', () => switchTab('rules'));
 }
 
 function switchTab(tabName) {
-    const tabs = ['upload', 'records', 'rules'];
+    const tabs = ['upload', 'records', 'analytics', 'rules'];
     
     tabs.forEach(name => {
         const btn = document.getElementById(`tab-btn-${name}`);
@@ -52,6 +60,17 @@ function switchTab(tabName) {
             }
             if (content) {
                 content.classList.remove('hidden');
+            }
+            if (name === 'analytics') {
+                renderAllCharts();
+                // Resize active charts so canvas displays with correct dimensions when unhidden
+                if (state.charts) {
+                    Object.values(state.charts).forEach(c => {
+                        if (c && typeof c.resize === 'function') {
+                            c.resize();
+                        }
+                    });
+                }
             }
         } else {
             // Inactivate button styling
@@ -172,6 +191,26 @@ async function handleFileUpload(file) {
         const recordsBadge = document.getElementById('records-badge');
         if (recordsBadge) {
             recordsBadge.textContent = state.allRecords.length;
+        }
+
+        // Populate Visual Analytics charts & dashboard
+        if (data.analytics) {
+            state.analytics = data.analytics;
+            const emptyState = document.getElementById('analytics-empty-state');
+            const dashboard = document.getElementById('analytics-dashboard');
+            if (emptyState) emptyState.classList.add('hidden');
+            if (dashboard) dashboard.classList.remove('hidden');
+
+            const fileNameEl = document.getElementById('analytics-file-name');
+            if (fileNameEl) fileNameEl.textContent = file.name;
+            const totalRecEl = document.getElementById('analytics-total-records');
+            if (totalRecEl) totalRecEl.textContent = `${state.allRecords.length} Tickets`;
+            const breachRateEl = document.getElementById('analytics-breach-rate');
+            if (breachRateEl && data.analytics.summary) {
+                breachRateEl.textContent = `${data.analytics.summary.breach_rate_pct}% Breached`;
+            }
+
+            renderAllCharts();
         }
 
     } catch (err) {
@@ -661,3 +700,229 @@ async function loadRules() {
         console.error('Failed to load rules:', err);
     }
 }
+
+// ============================================================================
+// Visual Analytics & Chart.js Life Cycle
+// ============================================================================
+
+function destroyCharts() {
+    if (!state.charts) return;
+    for (const key of Object.keys(state.charts)) {
+        if (state.charts[key] && typeof state.charts[key].destroy === 'function') {
+            state.charts[key].destroy();
+            state.charts[key] = null;
+        }
+    }
+}
+
+function renderAllCharts() {
+    if (!state.analytics) return;
+    if (typeof Chart === 'undefined') {
+        console.warn('Chart.js library is not yet loaded.');
+        return;
+    }
+
+    destroyCharts();
+    renderSeverityChart(state.analytics.severity_distribution || {});
+    renderOverdueChart(state.analytics.overdue_distribution || {});
+    renderTeamRankingsChart(state.analytics.team_rankings || []);
+}
+
+function renderSeverityChart(severityData) {
+    const canvas = document.getElementById('chart-severity');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+
+    const okCount = severityData.OK || 0;
+    const warningCount = severityData.WARNING || 0;
+    const criticalCount = severityData.CRITICAL || 0;
+    const breachedCount = severityData.BREACHED || 0;
+
+    state.charts.severity = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Compliant (OK)', 'Approaching (WARNING)', 'Critical Risk', 'Breached SLA'],
+            datasets: [{
+                data: [okCount, warningCount, criticalCount, breachedCount],
+                backgroundColor: ['#10b981', '#f59e0b', '#f97316', '#f43f5e'],
+                borderColor: '#ffffff',
+                borderWidth: 2,
+                hoverOffset: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '65%',
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        boxWidth: 12,
+                        padding: 14,
+                        font: { size: 11, family: 'Inter, sans-serif' },
+                        color: '#475569'
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const val = context.parsed || 0;
+                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                            const pct = total > 0 ? ((val / total) * 100).toFixed(1) : '0.0';
+                            return ` ${context.label}: ${val} (${pct}%)`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+function renderOverdueChart(overdueData) {
+    const canvas = document.getElementById('chart-overdue');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+
+    const labels = ['0-1 Days', '1-3 Days', '3-7 Days', '> 7 Days'];
+    const dataValues = [
+        overdueData['0-1d'] || 0,
+        overdueData['1-3d'] || 0,
+        overdueData['3-7d'] || 0,
+        overdueData['>7d'] || 0
+    ];
+
+    state.charts.overdue = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Overdue Tickets',
+                data: dataValues,
+                backgroundColor: ['#6366f1', '#f59e0b', '#f97316', '#f43f5e'],
+                borderRadius: 6,
+                borderSkipped: false
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return ` ${context.parsed.y} Overdue Tickets`;
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        precision: 0,
+                        stepSize: 1,
+                        font: { size: 11, family: 'Inter, sans-serif' },
+                        color: '#64748b'
+                    },
+                    grid: {
+                        color: '#f1f5f9'
+                    }
+                },
+                x: {
+                    ticks: {
+                        font: { size: 11, family: 'Inter, sans-serif' },
+                        color: '#64748b'
+                    },
+                    grid: { display: false }
+                }
+            }
+        }
+    });
+}
+
+function renderTeamRankingsChart(teamList) {
+    const canvas = document.getElementById('chart-teams');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+
+    const teams = teamList || [];
+    const labels = teams.map(t => t.team || 'Unassigned');
+    const breachedData = teams.map(t => t.breached || 0);
+    const compliantData = teams.map(t => t.compliant || 0);
+
+    state.charts.teams = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'Breached Tickets',
+                    data: breachedData,
+                    backgroundColor: '#f43f5e',
+                    borderRadius: 4
+                },
+                {
+                    label: 'Compliant Tickets',
+                    data: compliantData,
+                    backgroundColor: '#10b981',
+                    borderRadius: 4
+                }
+            ]
+        },
+        options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'top',
+                    labels: {
+                        boxWidth: 12,
+                        padding: 12,
+                        font: { size: 11, family: 'Inter, sans-serif' },
+                        color: '#475569'
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        afterBody: function(tooltipItems) {
+                            if (!tooltipItems.length) return '';
+                            const idx = tooltipItems[0].dataIndex;
+                            const t = teams[idx];
+                            if (t) {
+                                return `Breach Rate: ${t.breach_rate_pct}% (Total: ${t.total})`;
+                            }
+                            return '';
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    stacked: true,
+                    beginAtZero: true,
+                    ticks: {
+                        precision: 0,
+                        stepSize: 1,
+                        font: { size: 11, family: 'Inter, sans-serif' },
+                        color: '#64748b'
+                    },
+                    grid: {
+                        color: '#f1f5f9'
+                    }
+                },
+                y: {
+                    stacked: true,
+                    ticks: {
+                        font: { size: 11, family: 'Inter, sans-serif' },
+                        color: '#64748b'
+                    },
+                    grid: { display: false }
+                }
+            }
+        }
+    });
+}
+

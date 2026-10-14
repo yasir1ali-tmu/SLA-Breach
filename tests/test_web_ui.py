@@ -26,6 +26,9 @@ def test_root_route_serves_html(client: TestClient) -> None:
     assert "SLA Breach Dashboard" in body
     assert "Confluence &amp; Word Export Ticket Ingestion Engine" in body
 
+    # Verify Chart.js script is included
+    assert "cdn.jsdelivr.net/npm/chart.js" in body
+
     # Verify presence of essential UI container IDs
     required_ids = [
         "drop-zone",
@@ -35,9 +38,16 @@ def test_root_route_serves_html(client: TestClient) -> None:
         "kpi-section",
         "tab-btn-upload",
         "tab-btn-records",
+        "tab-btn-analytics",
         "tab-btn-rules",
         "tab-content-upload",
         "tab-content-records",
+        "tab-content-analytics",
+        "analytics-empty-state",
+        "analytics-dashboard",
+        "chart-severity",
+        "chart-overdue",
+        "chart-teams",
         "tab-content-rules",
         "table-search",
         "filter-priority",
@@ -67,6 +77,11 @@ def test_static_assets_serving(client: TestClient) -> None:
     assert "applyFilters" in res_js.text
     assert "renderTable" in res_js.text
     assert "openRawFieldsModal" in res_js.text
+    assert "renderAllCharts" in res_js.text
+    assert "destroyCharts" in res_js.text
+    assert "renderSeverityChart" in res_js.text
+    assert "renderOverdueChart" in res_js.text
+    assert "renderTeamRankingsChart" in res_js.text
 
     # Test CSS bundle
     res_css = client.get("/static/css/styles.css")
@@ -153,6 +168,15 @@ def test_end_to_end_upload_contract_with_frontend_schema(client: TestClient) -> 
     assert isinstance(metrics.get("breach_rate_pct"), (int, float))
     assert isinstance(metrics.get("avg_overdue_days"), (int, float))
     assert isinstance(metrics.get("by_severity"), dict)
+
+    # Analytics schema consumed by renderAllCharts() in app.js
+    analytics = data.get("analytics")
+    assert analytics is not None
+    assert "overdue_distribution" in analytics
+    assert "severity_distribution" in analytics
+    assert "team_rankings" in analytics
+    assert "summary" in analytics
+    assert isinstance(analytics["team_rankings"], list)
 
     # Records schema consumed by renderTable() and openRawFieldsModal()
     records = data.get("records")
