@@ -1,19 +1,19 @@
 ---
 milestone: v1.0
 version: 1.0.0
-updated: 2026-10-14T02:39:00Z
+updated: 2026-10-14T03:15:00Z
 ---
 
 # Roadmap
 
-> **Current Phase:** 2 - Core Parsing & SLA Calculation Engine
+> **Current Phase:** 3 - Web Application & REST API (FastAPI + Drag-and-Drop)
 > **Status:** Ready for Planning
 
 ## Must-Haves (from SPEC)
 
 - [x] Clean modular architecture with `config/`, `core/`, and `web/` packages.
-- [ ] Confluence/HTML and DOCX table extraction parsers.
-- [ ] Core SLA calculation engine (durations, overdue days/hours, breach threshold detection).
+- [x] Confluence/HTML and DOCX table extraction parsers.
+- [x] Core SLA calculation engine (durations, overdue days/hours, breach threshold detection).
 - [ ] FastAPI web application with drag-and-drop file upload.
 - [ ] Interactive multi-tab web dashboard with search, filter, and visual metric charts.
 - [x] Human-readable docstrings and strict typing throughout.
@@ -34,14 +34,14 @@ updated: 2026-10-14T02:39:00Z
 ---
 
 ### Phase 2: Core Parsing & SLA Calculation Engine
-**Status:** ⬜ Not Started
+**Status:** ✅ Complete
 **Objective:** Implement modular parsers for Confluence/HTML and Word (.docx) table extraction, and build the core SLA breach and overdue calculation engine.
 **Depends on:** Phase 1
 **Requirements:** REQ-03, REQ-04, REQ-05, NFR-01
 
 **Plans:**
-- [ ] Plan 2.1: Table extraction modules for Confluence/HTML (`core/parsers/html_parser.py`) and DOCX (`core/parsers/docx_parser.py`).
-- [ ] Plan 2.2: SLA breach calculation engine (`core/sla/engine.py`), duration/overdue calculators, and severity categorizer.
+- [x] Plan 2.1: Table extraction modules for Confluence/HTML (`core/parsers/html_parser.py`) and DOCX (`core/parsers/docx_parser.py`).
+- [x] Plan 2.2: SLA breach calculation engine (`core/sla/engine.py`), duration/overdue calculators, and severity categorizer.
 
 ---
 
@@ -74,7 +74,7 @@ updated: 2026-10-14T02:39:00Z
 | Phase | Status | Plans | Complete |
 |-------|--------|-------|----------|
 | 1 | ✅ | 2/2 | 100% |
-| 2 | ⬜ | 0/2 | — |
+| 2 | ✅ | 2/2 | 100% |
 | 3 | ⬜ | 0/2 | — |
 | 4 | ⬜ | 0/2 | — |
 
@@ -85,6 +85,6 @@ updated: 2026-10-14T02:39:00Z
 | Phase | Started | Completed | Duration |
 |-------|---------|-----------|----------|
 | 1 | 2026-10-13 | 2026-10-13 | ~15m |
-| 2 | — | — | — |
+| 2 | 2026-10-13 | 2026-10-13 | ~25m |
 | 3 | — | — | — |
 | 4 | — | — | — |
