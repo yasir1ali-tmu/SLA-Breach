@@ -1,6 +1,6 @@
 ---
 milestone: v1.0
-updated: 2026-10-14T03:40:30Z
+updated: 2026-10-14T04:12:45Z
 ---
 
 # Requirements
@@ -22,7 +22,7 @@ Functional and non-functional requirements derived from `SPEC.md` for traceabili
 | REQ-06 | FastAPI REST endpoints for file upload, validation, and analytics querying | SPEC Goal 4 | 3 | Complete |
 | REQ-07 | Multi-tab modern web UI (Upload/Overview, Breach Records, Visual Dashboards) | SPEC Goal 4 | 3 | Complete |
 | REQ-08 | Drag-and-drop file uploader with progress and status feedback | SPEC Goal 4 | 3 | Complete |
-| REQ-09 | Interactive visual dashboard charts (severity breakdown, overdue distribution) | SPEC Goal 4 | 4 | Pending |
+| REQ-09 | Interactive visual dashboard charts (severity breakdown, overdue distribution) | SPEC Goal 4 | 4 | Complete |
 | REQ-10 | Configurable SLA thresholds & rules loaded from YAML/JSON config | SPEC Goal 1 | 1 | Complete |
 
 ---
@@ -51,8 +51,8 @@ Functional and non-functional requirements derived from `SPEC.md` for traceabili
 | REQ-06 | 3.1 | `tests/test_api.py` (10 tests) | Complete |
 | REQ-07 | 3.2 | `tests/test_web_ui.py` (5 tests) | Complete |
 | REQ-08 | 3.2 | `tests/test_web_ui.py` + `tests/test_api.py` | Complete |
-| REQ-09 | 4.1 | Dashboard metrics & chart rendering test | Pending |
+| REQ-09 | 4.1 | `tests/test_analytics.py` (6 tests) + `tests/test_e2e.py` | Complete |
 | NFR-01 | 2.2 | Ingestion benchmark (< 0.05s on sample datasets) | Complete |
 | NFR-02 | 3.2 | Static assets verification (`tests/test_web_ui.py`) | Complete |
 | NFR-03 | All | Code review & AST scan (0 missing docstrings) | Complete |
-| NFR-04 | 3.1 | Error boundary tests (`tests/test_api.py`) | Complete |
+| NFR-04 | 3.1 | Error boundary tests (`tests/test_api.py`, `tests/test_e2e.py`) | Complete |
