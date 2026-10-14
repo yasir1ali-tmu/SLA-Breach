@@ -1,35 +1,35 @@
 ---
 milestone: v1.0
 version: 1.0.0
-updated: 2026-10-13T22:17:10Z
+updated: 2026-10-14T02:39:00Z
 ---
 
 # Roadmap
 
-> **Current Phase:** 1 - Project Foundation & Architecture Setup
-> **Status:** Planning
+> **Current Phase:** 2 - Core Parsing & SLA Calculation Engine
+> **Status:** Ready for Planning
 
 ## Must-Haves (from SPEC)
 
-- [ ] Clean modular architecture with `config/`, `core/`, and `web/` packages.
+- [x] Clean modular architecture with `config/`, `core/`, and `web/` packages.
 - [ ] Confluence/HTML and DOCX table extraction parsers.
 - [ ] Core SLA calculation engine (durations, overdue days/hours, breach threshold detection).
 - [ ] FastAPI web application with drag-and-drop file upload.
 - [ ] Interactive multi-tab web dashboard with search, filter, and visual metric charts.
-- [ ] Human-readable docstrings and strict typing throughout.
+- [x] Human-readable docstrings and strict typing throughout.
 
 ---
 
 ## Phases
 
 ### Phase 1: Project Foundation & Architecture Setup
-**Status:** ⬜ Not Started
+**Status:** ✅ Complete
 **Objective:** Establish modular folder scaffolding (`config/`, `core/`, `web/`), configuration management, dependencies, and core Pydantic data models.
 **Requirements:** REQ-01, REQ-02, REQ-10
 
 **Plans:**
-- [ ] Plan 1.1: Project scaffolding, environment dependencies (`requirements.txt`), and core data models (`core/models/`).
-- [ ] Plan 1.2: Configuration system (`config/`) for default SLA thresholds, field mappings, and app settings.
+- [x] Plan 1.1: Project scaffolding, environment dependencies (`requirements.txt`), and core data models (`core/models/`).
+- [x] Plan 1.2: Configuration system (`config/`) for default SLA thresholds, field mappings, and app settings.
 
 ---
 
@@ -73,7 +73,7 @@ updated: 2026-10-13T22:17:10Z
 
 | Phase | Status | Plans | Complete |
 |-------|--------|-------|----------|
-| 1 | ⬜ | 0/2 | — |
+| 1 | ✅ | 2/2 | 100% |
 | 2 | ⬜ | 0/2 | — |
 | 3 | ⬜ | 0/2 | — |
 | 4 | ⬜ | 0/2 | — |
@@ -84,7 +84,7 @@ updated: 2026-10-13T22:17:10Z
 
 | Phase | Started | Completed | Duration |
 |-------|---------|-----------|----------|
-| 1 | — | — | — |
+| 1 | 2026-10-13 | 2026-10-13 | ~15m |
 | 2 | — | — | — |
 | 3 | — | — | — |
 | 4 | — | — | — |
