@@ -102,6 +102,25 @@ def test_upload_html_success(client: TestClient) -> None:
     assert rec1["overdue_days"] is not None
     assert rec1["severity"] in ["OK", "WARNING", "CRITICAL", "BREACHED"]
 
+    # Validate analytics payload structure
+    assert "analytics" in data
+    analytics = data["analytics"]
+    assert "overdue_distribution" in analytics
+    assert all(
+        k in analytics["overdue_distribution"]
+        for k in ["0-1d", "1-3d", "3-7d", ">7d"]
+    )
+    assert "severity_distribution" in analytics
+    assert all(
+        k in analytics["severity_distribution"]
+        for k in ["OK", "WARNING", "CRITICAL", "BREACHED"]
+    )
+    assert "team_rankings" in analytics
+    assert isinstance(analytics["team_rankings"], list)
+    assert len(analytics["team_rankings"]) > 0
+    assert "team" in analytics["team_rankings"][0]
+    assert "breached" in analytics["team_rankings"][0]
+
 
 def test_upload_htm_extension_success(client: TestClient) -> None:
     """POST /api/upload supports .htm extension as valid HTML."""
@@ -160,6 +179,22 @@ def test_upload_docx_success(client: TestClient) -> None:
     assert data["parsed_count"] == 1
     assert data["records"][0]["key"] == "DOC-202"
     assert data["records"][0]["sla_target_days"] == 5.0
+
+    # Validate analytics payload structure
+    assert "analytics" in data
+    analytics = data["analytics"]
+    assert "overdue_distribution" in analytics
+    assert all(
+        k in analytics["overdue_distribution"]
+        for k in ["0-1d", "1-3d", "3-7d", ">7d"]
+    )
+    assert "severity_distribution" in analytics
+    assert all(
+        k in analytics["severity_distribution"]
+        for k in ["OK", "WARNING", "CRITICAL", "BREACHED"]
+    )
+    assert "team_rankings" in analytics
+    assert isinstance(analytics["team_rankings"], list)
 
 
 def test_upload_unsupported_extension(client: TestClient) -> None:

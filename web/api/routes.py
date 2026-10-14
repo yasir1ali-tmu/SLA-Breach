@@ -8,6 +8,7 @@ from typing import Any, Dict
 from fastapi import APIRouter, File, HTTPException, UploadFile
 
 from config.settings import get_settings, get_sla_rules
+from core.analytics.metrics import compute_analytics_payload
 from core.parsers.docx_parser import parse_docx_table
 from core.parsers.html_parser import parse_html_table
 from core.sla.engine import SlaEngine
@@ -107,6 +108,7 @@ async def upload_file(file: UploadFile = File(...)) -> Dict[str, Any]:
     engine = SlaEngine()
     engine.process_extraction_result(extraction_result)
     summary_metrics = engine.calculate_summary_metrics(extraction_result.parsed_records)
+    analytics = compute_analytics_payload(extraction_result.parsed_records)
 
     return {
         "source_filename": filename,
@@ -118,6 +120,7 @@ async def upload_file(file: UploadFile = File(...)) -> Dict[str, Any]:
         "errors": extraction_result.errors,
         "warnings": extraction_result.warnings,
         "metrics": summary_metrics.model_dump(mode="json"),
+        "analytics": analytics,
         "records": [
             r.model_dump(mode="json") for r in extraction_result.parsed_records
         ],
