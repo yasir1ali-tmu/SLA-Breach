@@ -20,7 +20,7 @@ def test_root_serves_react_build(client: TestClient) -> None:
     response = client.get("/")
     assert response.status_code == 200
     assert "text/html" in response.headers["content-type"]
-    assert "SLA Breach Dashboard & Analyzer" in response.text
+    assert "Dashboard & Analyzer" in response.text
     assert '<div id="root"' in response.text
 
 

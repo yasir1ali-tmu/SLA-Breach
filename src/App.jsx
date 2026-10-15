@@ -156,7 +156,7 @@ export default function App() {
       {/* 1. TOP HEADER & BRANDING                                      */}
       {/* ------------------------------------------------------------- */}
       <header className="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-xs">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-0 sm:h-16 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-0">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center space-x-3">
             {/* Logo Icon */}
             <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center text-white shadow-sm shrink-0">
@@ -165,21 +165,10 @@ export default function App() {
               </svg>
             </div>
             <div className="min-w-0">
-              <h1 className="text-base sm:text-lg font-bold text-slate-900 leading-tight truncate sm:whitespace-normal">
-                SLA Breach Dashboard & Analyzer
+              <h1 className="text-base sm:text-lg font-bold text-slate-900 leading-tight">
+                Dashboard & Analyzer
               </h1>
-              <p className="text-[11px] sm:text-xs text-slate-500 truncate sm:whitespace-normal">Confluence & Word Export Ticket Ingestion Engine</p>
             </div>
-          </div>
-
-          <div className="flex items-center space-x-2 self-start sm:self-auto shrink-0">
-            <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 mr-1.5 animate-pulse"></span>
-              System Ready
-            </span>
-            <span className="text-xs px-2.5 py-1 rounded-md bg-indigo-50 text-indigo-700 font-mono font-bold">
-              React UI
-            </span>
           </div>
         </div>
 
