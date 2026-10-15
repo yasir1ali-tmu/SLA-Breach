@@ -166,7 +166,7 @@ The command automatically displays a startup banner and opens `http://127.0.0.1:
 
 ---
 
-## Non-Technical Manager Runbook
+## Non-Technical  Runbook
 
 This step-by-step operational guide requires **zero coding knowledge** once the application is running.
 
