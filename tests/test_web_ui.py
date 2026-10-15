@@ -239,3 +239,20 @@ def test_rules_endpoint_contract_with_frontend(client: TestClient) -> None:
     assert ".html" in rules["allowed_extensions"]
     assert ".docx" in rules["allowed_extensions"]
     assert "max_upload_size_mb" in rules
+
+
+def test_kpi_section_positioned_above_upload_drop_zone(client: TestClient) -> None:
+    """Verify that the 4 KPI cards grid is rendered in the DOM above the upload drop zone."""
+    response = client.get("/")
+    assert response.status_code == 200
+    body = response.text
+
+    kpi_idx = body.find('id="kpi-section"')
+    drop_idx = body.find('id="drop-zone"')
+
+    assert kpi_idx != -1, "Expected #kpi-section in DOM"
+    assert drop_idx != -1, "Expected #drop-zone in DOM"
+    assert kpi_idx < drop_idx, (
+        f"Expected #kpi-section (index {kpi_idx}) to appear before #drop-zone (index {drop_idx}) in DOM"
+    )
+
