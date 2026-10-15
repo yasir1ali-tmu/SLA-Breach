@@ -6,7 +6,7 @@ from typing import Any
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from starlette.exceptions import HTTPException as StarletteHTTPException
@@ -66,7 +66,17 @@ def create_app(settings: AppSettings | None = None) -> FastAPI:
             content={"detail": "Internal server error", "error": str(exc)},
         )
 
-    # Template and static assets configuration
+    # Project root directory and React dist assets
+    project_root = Path(__file__).resolve().parent.parent
+    dist_dir = project_root / "dist"
+    dist_index = dist_dir / "index.html"
+    dist_assets = dist_dir / "assets"
+
+    # Mount React production assets if dist directory exists
+    if dist_assets.is_dir():
+        app.mount("/assets", StaticFiles(directory=str(dist_assets)), name="assets")
+
+    # Template and legacy static assets configuration
     templates_dir = Path(__file__).parent / "templates"
     templates = Jinja2Templates(directory=str(templates_dir))
 
@@ -75,10 +85,13 @@ def create_app(settings: AppSettings | None = None) -> FastAPI:
     if static_dir.is_dir():
         app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
 
-    # Root route serving dashboard UI
+    # Root route serving React dashboard UI (or fallback to template)
     @app.get("/", summary="Dashboard web user interface")
     async def index(request: Request):
-        """Render the main multi-tab SLA breach dashboard interface."""
+        """Render the React SLA breach dashboard or template fallback."""
+        if dist_index.is_file() and request.query_params.get("view") != "template":
+            return FileResponse(str(dist_index))
+
         return templates.TemplateResponse(
             request=request,
             name="index.html",

@@ -15,9 +15,18 @@ def client() -> TestClient:
     return TestClient(app)
 
 
-def test_root_route_serves_html(client: TestClient) -> None:
-    """Validate that GET / renders HTML template with 200 OK and expected DOM elements."""
+def test_root_serves_react_build(client: TestClient) -> None:
+    """Validate that GET / serves the compiled React frontend when dist/index.html exists."""
     response = client.get("/")
+    assert response.status_code == 200
+    assert "text/html" in response.headers["content-type"]
+    assert "SLA Breach Dashboard & Analyzer" in response.text
+    assert '<div id="root"' in response.text
+
+
+def test_root_route_serves_html(client: TestClient) -> None:
+    """Validate that GET /?view=template renders HTML template with 200 OK and expected DOM elements."""
+    response = client.get("/?view=template")
     assert response.status_code == 200
     assert "text/html" in response.headers["content-type"]
 
@@ -97,7 +106,7 @@ def test_static_assets_serving(client: TestClient) -> None:
 def test_html_template_context_values(client: TestClient) -> None:
     """Verify that template context dynamically renders application settings values."""
     settings = get_settings()
-    response = client.get("/")
+    response = client.get("/?view=template")
     assert response.status_code == 200
 
     body = response.text
@@ -243,7 +252,7 @@ def test_rules_endpoint_contract_with_frontend(client: TestClient) -> None:
 
 def test_kpi_section_positioned_above_upload_drop_zone(client: TestClient) -> None:
     """Verify that the 4 KPI cards grid is rendered in the DOM above the upload drop zone."""
-    response = client.get("/")
+    response = client.get("/?view=template")
     assert response.status_code == 200
     body = response.text
 

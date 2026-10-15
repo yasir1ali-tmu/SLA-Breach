@@ -390,7 +390,7 @@ def test_e2e_docx_table_ingestion_and_calculation(client: TestClient) -> None:
 def test_e2e_web_ui_lifecycle_contract(client: TestClient) -> None:
     """End-to-end verification of HTML view, scripts, styles, rules API, and Chart.js DOM integration."""
     # 1. Main index page renders 200 OK
-    res_index = client.get("/")
+    res_index = client.get("/?view=template")
     assert res_index.status_code == 200
     body = res_index.text
 
