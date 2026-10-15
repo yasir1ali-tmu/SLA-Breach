@@ -115,11 +115,16 @@ def load_sla_rules(config_path: Optional[Union[Path, str]] = None) -> SlaRulesCo
     """
     if config_path is None:
         target_path = get_settings().rules_config_path
+        if not target_path.is_file():
+            alt_path = Path(__file__).resolve().parent / "default_sla_rules.yaml"
+            if alt_path.is_file():
+                target_path = alt_path
     else:
         target_path = Path(config_path)
 
     if not target_path.is_file():
         raise FileNotFoundError(f"Configuration file not found: {target_path}")
+
 
     try:
         with open(target_path, "r", encoding="utf-8") as f:
